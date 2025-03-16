@@ -1,0 +1,45 @@
+
+    # This is a basic workflow to help you get started with Actions
+
+name: CI/CD
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  static_analysis:
+    runs-on: ubuntu-latest
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      # Setup Python for mkdocs
+      - name: Set up Python 3.10.2
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.10.2
+      
+      # Install Python dependencies
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      # Lint + Static Analysis
+      - name: Run Static Analysis
+        run: |
+          black --check . && \
+          isort --check . && \
+          bandit -r . && \
+          safety check -r requirements.txt && \
+          mypy .
+    
